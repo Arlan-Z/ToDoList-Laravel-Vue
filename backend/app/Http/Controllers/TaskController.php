@@ -73,6 +73,13 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        // Проверка, принадлежит ли задача текущему пользователю
+        if ($task->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $task->delete();
+
+        return response()->json(['message' => 'Task deleted successfully'], 200);
     }
 }
