@@ -1,23 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginForm from '../components/LoginForm.vue';
-import TaskBoard from '../components/TaskBoard.vue';
+import LoginPage from '../views/LoginPage.vue';
+import TasksPage from '../views/TasksPage.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Login',
-    component: LoginForm, 
+    component: LoginPage,
   },
   {
     path: '/tasks',
-    name: 'TaskBoard',
-    component: TaskBoard,
-    meta: { requiresAuth: true }, // Добавляем мета-поле для защиты маршрута
+    name: 'Tasks',
+    component: TasksPage,
+    meta: { requiresAuth: true },
   },
-  { 
-    path: '/:pathMatch(.*)*', 
-    redirect: '/', 
-  }, 
 ];
 
 const router = createRouter({
@@ -25,11 +21,10 @@ const router = createRouter({
   routes,
 });
 
-// Защита маршрута /tasks
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
-  if (to.meta.requiresAuth && !token) {
-    next('/'); // Перенаправляем на страницу входа, если нет токена
+  if (to.matched.some(record => record.meta.requiresAuth) && !token) {
+    next('/');
   } else {
     next();
   }
