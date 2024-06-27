@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <router-view :fetchTasks="fetchTasks" :tasks="tasks" />
+    <router-view
+      :fetchTasks="fetchTasks"
+      :tasks="tasks"
+      @task-updated="fetchTasks"
+    />
   </div>
 </template>
 

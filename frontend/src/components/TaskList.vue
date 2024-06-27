@@ -141,12 +141,25 @@ export default {
     },
   },
   mounted() {
-    // Убираем fetchTasks из mounted, так как он теперь вызывается в App.vue
-    //this.$on('taskCreated', this.fetchTasks);
+    this.emitter.on('task-updated', this.fetchTasks); //
+    this.emitter.on('task-created', this.fetchTasks); // Обновляем задачи после создания
+    this.emitter.on('task-updated', (updatedTask) => {
+      // Находим индекс задачи в массиве tasks
+      const taskIndex = this.tasks.findIndex(
+        (task) => task.id === updatedTask.id // Исправляем форматирование
+      );
+
+      // Вместо изменения this.tasks,
+      // генерируем событие и передаем обновленные данные в App.vue:
+      if (taskIndex !== -1) {
+        this.$emit('tasks-updated', [
+          ...this.tasks.slice(0, taskIndex),
+          updatedTask,
+          ...this.tasks.slice(taskIndex + 1),
+        ]);
+      }
+    });
   },
-  //   beforeUnmount() {
-  //     this.emitter.off('taskCreated', this.fetchTasks);
-  //   },
 };
 </script>
 
