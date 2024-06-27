@@ -76,48 +76,34 @@ export default {
 </script>
 
 <style scoped>
-.modal {
-  display: block;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.4);
-  padding-top: 60px;
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 5% auto;
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 20px;
-  border: 1px solid #888;
-  width: 30%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 20px;
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+.task-form input[type='text'],
+.task-form textarea,
+.task-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
+.task-form button[type='submit'] {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 3px;
   cursor: pointer;
 }
 
-.form-group {
-  margin-bottom: 10px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
+.task-form button[type='submit']:hover {
+  background-color: #45a049;
 }
 </style>
