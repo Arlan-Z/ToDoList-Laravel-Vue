@@ -1,42 +1,72 @@
 <template>
   <div>
     <h2>Мои Задачи</h2>
+    <TaskFilter @update:sort="updateSortOrder" />
     <div v-if="isLoading" class="loading">Загрузка...</div>
     <div v-else class="task-board">
       <div class="column">
         <h3>To Do</h3>
-        <TaskCard v-for="task in toDoTasks" :key="task.id" :task="task" />
+        <button @click="openModal('To Do')">Добавить задачу</button>
+        <TaskCard v-for="task in sortedToDoTasks" :key="task.id" :task="task" />
       </div>
 
       <div class="column">
         <h3>In Progress</h3>
-        <TaskCard v-for="task in inProgressTasks" :key="task.id" :task="task" />
+        <button @click="openModal('In Progress')">Добавить задачу</button>
+        <TaskCard
+          v-for="task in sortedInProgressTasks"
+          :key="task.id"
+          :task="task"
+        />
       </div>
 
       <div class="column">
         <h3>Done</h3>
-        <TaskCard v-for="task in doneTasks" :key="task.id" :task="task" />
+        <button @click="openModal('Done')">Добавить задачу</button>
+        <TaskCard v-for="task in sortedDoneTasks" :key="task.id" :task="task" />
       </div>
     </div>
+    <TaskForm
+      v-if="showTaskForm"
+      :status="taskFormStatus"
+      @close="closeModal"
+      @taskCreated="fetchTasks"
+    />
   </div>
 </template>
 
 <script>
 import axios from 'axios';
 import TaskCard from './TaskCard.vue';
+import TaskFilter from './TaskFilter.vue';
+import TaskForm from './TaskForm.vue';
 
 export default {
   components: {
     TaskCard,
+    TaskFilter,
+    TaskForm,
   },
 
   data() {
     return {
       tasks: [],
       isLoading: true,
+      sortOrder: 'asc',
+      showTaskForm: false,
+      taskFormStatus: '',
     };
   },
   computed: {
+    sortedToDoTasks() {
+      return this.sortTasks(this.toDoTasks);
+    },
+    sortedInProgressTasks() {
+      return this.sortTasks(this.inProgressTasks);
+    },
+    sortedDoneTasks() {
+      return this.sortTasks(this.doneTasks);
+    },
     toDoTasks() {
       return this.tasks.filter((task) => task.status === 'To Do');
     },
@@ -45,6 +75,36 @@ export default {
     },
     doneTasks() {
       return this.tasks.filter((task) => task.status === 'Done');
+    },
+  },
+  methods: {
+    openModal(status) {
+      this.showTaskForm = true;
+      this.taskFormStatus = status;
+    },
+    closeModal() {
+      this.showTaskForm = false;
+    },
+    updateSortOrder(order) {
+      this.sortOrder = order;
+    },
+    sortTasks(tasks) {
+      const priorityOrder = {
+        Low: 1,
+        Medium: 2,
+        High: 3,
+      };
+
+      return [...tasks].sort((a, b) => {
+        const priorityA = priorityOrder[a.prior] || 0;
+        const priorityB = priorityOrder[b.prior] || 0;
+
+        if (this.sortOrder === 'asc') {
+          return priorityA - priorityB;
+        } else {
+          return priorityB - priorityA;
+        }
+      });
     },
   },
   async mounted() {
