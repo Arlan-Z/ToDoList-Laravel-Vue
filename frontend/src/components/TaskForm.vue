@@ -1,29 +1,19 @@
 <template>
-  <div class="modal" v-if="showModal">
-    <div class="modal-content">
-      <span class="close" @click="closeModal">×</span>
-      <h2>Новая Задача</h2>
-      <form @submit.prevent="createTask">
-        <div class="form-group">
-          <label for="title">Название:</label>
-          <input type="text" id="title" v-model="newTask.title" required />
-        </div>
-        <div class="form-group">
-          <label for="description">Описание:</label>
-          <textarea id="description" v-model="newTask.descr"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="priority">Приоритет:</label>
-          <select id="priority" v-model="newTask.prior">
-            <option value="Low">Низкий</option>
-            <option value="Medium">Средний</option>
-            <option value="High">Высокий</option>
-          </select>
-        </div>
-        <button type="submit">Создать</button>
-      </form>
-    </div>
-  </div>
+  <form @submit.prevent="createTask" class="task-form">
+    <input
+      type="text"
+      placeholder="Название задачи"
+      v-model="newTask.title"
+      required
+    />
+    <textarea placeholder="Описание задачи" v-model="newTask.descr"></textarea>
+    <select v-model="newTask.prior">
+      <option value="Low">Низкий</option>
+      <option value="Medium">Средний</option>
+      <option value="High">Высокий</option>
+    </select>
+    <button type="submit">Создать</button>
+  </form>
 </template>
 
 <script>
@@ -38,7 +28,6 @@ export default {
   },
   data() {
     return {
-      showModal: false,
       newTask: {
         title: '',
         descr: '',
@@ -48,15 +37,11 @@ export default {
     };
   },
   methods: {
-    closeModal() {
-      this.showModal = false;
-      this.$emit('close');
-    },
     async createTask() {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          // Обработка ошибки: пользователь не авторизован
+          this.$router.push('/');
           return;
         }
 
@@ -66,7 +51,7 @@ export default {
             title: this.newTask.title,
             descr: this.newTask.descr,
             prior: this.newTask.prior,
-            status: this.newTask.status,
+            status: this.status,
           },
           {
             headers: {
@@ -75,11 +60,15 @@ export default {
           }
         );
 
-        this.$emit('taskCreated'); // Сообщаем родителю о создании задачи
-        this.closeModal(); // Закрываем модальное окно
+        this.$emit('task-created');
+
+        // Очищаем форму
+        this.newTask.title = '';
+        this.newTask.descr = '';
+        this.newTask.prior = 'Low';
       } catch (error) {
         console.error('Ошибка при создании задачи:', error);
-        // Обработка ошибки создания задачи
+        // Обработка ошибки
       }
     },
   },

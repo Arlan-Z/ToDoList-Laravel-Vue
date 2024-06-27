@@ -6,13 +6,27 @@
     <div v-else class="task-board">
       <div class="column">
         <h3>To Do</h3>
-        <button @click="openModal('To Do')">Добавить задачу</button>
+        <button @click="showTaskFormToDo = !showTaskFormToDo">
+          {{ showTaskFormToDo ? 'Закрыть форму' : 'Добавить задачу' }}
+        </button>
+        <TaskForm
+          v-if="showTaskFormToDo"
+          status="To Do"
+          @task-created="fetchTasks"
+        />
         <TaskCard v-for="task in sortedToDoTasks" :key="task.id" :task="task" />
       </div>
 
       <div class="column">
         <h3>In Progress</h3>
-        <button @click="openModal('In Progress')">Добавить задачу</button>
+        <button @click="showTaskFormInProgress = !showTaskFormInProgress">
+          {{ showTaskFormInProgress ? 'Закрыть форму' : 'Добавить задачу' }}
+        </button>
+        <TaskForm
+          v-if="showTaskFormInProgress"
+          status="In Progress"
+          @task-created="fetchTasks"
+        />
         <TaskCard
           v-for="task in sortedInProgressTasks"
           :key="task.id"
@@ -22,16 +36,17 @@
 
       <div class="column">
         <h3>Done</h3>
-        <button @click="openModal('Done')">Добавить задачу</button>
+        <button @click="showTaskFormDone = !showTaskFormDone">
+          {{ showTaskFormDone ? 'Закрыть форму' : 'Добавить задачу' }}
+        </button>
+        <TaskForm
+          v-if="showTaskFormDone"
+          status="Done"
+          @task-created="fetchTasks"
+        />
         <TaskCard v-for="task in sortedDoneTasks" :key="task.id" :task="task" />
       </div>
     </div>
-    <TaskForm
-      v-if="showTaskForm"
-      :status="taskFormStatus"
-      @close="closeModal"
-      @taskCreated="fetchTasks"
-    />
   </div>
 </template>
 
@@ -53,8 +68,9 @@ export default {
       tasks: [],
       isLoading: true,
       sortOrder: 'asc',
-      showTaskForm: false,
-      taskFormStatus: '',
+      showTaskFormToDo: false,
+      showTaskFormInProgress: false,
+      showTaskFormDone: false,
     };
   },
   computed: {
