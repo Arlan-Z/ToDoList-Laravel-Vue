@@ -1,76 +1,83 @@
 <template>
-  <form @submit.prevent="createTask" class="task-form">
-    <input
-      type="text"
-      placeholder="Название задачи"
-      v-model="newTask.title"
-      required
-    />
-    <textarea placeholder="Описание задачи" v-model="newTask.descr"></textarea>
-    <select v-model="newTask.prior">
-      <option value="Low">Низкий</option>
-      <option value="Medium">Средний</option>
-      <option value="High">Высокий</option>
+  <div class="task-form">
+    <input v-model="taskData.title" placeholder="Title" />
+    <textarea v-model="taskData.descr" placeholder="Description"></textarea>
+    <select v-model="taskData.status">
+      <option value="To Do">To Do</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Done">Done</option>
     </select>
-    <button type="submit">Создать</button>
-  </form>
+    <select v-model="taskData.prior">
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+    <button @click="submitForm">Save</button>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { ref } from 'vue';
+// import { useRouter } from 'vue-router'; // Удалим, если не используется
 
 export default {
   props: {
-    status: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      newTask: {
+    task: {
+      type: Object,
+      default: () => ({
         title: '',
         descr: '',
+        status: 'To Do',
         prior: 'Low',
-        status: this.status,
-      },
-    };
+      }),
+    },
+    status: {
+      type: String,
+      default: 'To Do',
+    },
   },
-  methods: {
-    async createTask() {
+  setup(props, { emit }) {
+    const taskData = ref({
+      title: props.task.title,
+      descr: props.task.descr,
+      status: props.task.status || props.status,
+      prior: props.task.prior,
+    });
+
+    const submitForm = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          this.$router.push('/');
+          // router.push({ name: 'AuthPage' }); // Удалим, если не используется
           return;
         }
 
-        await axios.post(
-          '/api/tasks',
-          {
-            title: this.newTask.title,
-            descr: this.newTask.descr,
-            prior: this.newTask.prior,
-            status: this.status,
-          },
-          {
+        if (props.task.id) {
+          await axios.patch(`/api/tasks/${props.task.id}`, taskData.value, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
-        );
-
-        this.$emit('task-created');
-
-        // Очищаем форму
-        this.newTask.title = '';
-        this.newTask.descr = '';
-        this.newTask.prior = 'Low';
+          });
+          emit('task-updated'); // Emit event after task is updated
+        } else {
+          await axios.post('/api/tasks', taskData.value, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          emit('task-created');
+        }
       } catch (error) {
-        console.error('Ошибка при создании задачи:', error);
-        // Обработка ошибки
+        console.error('Ошибка при сохранении задачи:', error);
+        // ... (обработка ошибок)
       }
-    },
+    };
+
+    return {
+      taskData,
+      submitForm,
+    };
   },
 };
 </script>
