@@ -1,10 +1,49 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view />
+  <div id="app">
+    <router-view :fetchTasks="fetchTasks" :tasks="tasks" />
+  </div>
 </template>
+
+<script>
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+export default {
+  setup() {
+    const tasks = ref([]);
+    const router = useRouter();
+
+    const fetchTasks = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push({ name: 'AuthPage' });
+          return;
+        }
+
+        const response = await axios.get('/api/tasks', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        tasks.value = response.data.data;
+      } catch (error) {
+        console.error('Ошибка при получении задач:', error);
+        // ... (обработка ошибок)
+      }
+    };
+
+    onMounted(fetchTasks); // Вызываем fetchTasks при монтировании
+
+    return {
+      tasks,
+      fetchTasks,
+    };
+  },
+};
+</script>
 
 <style>
 #app {

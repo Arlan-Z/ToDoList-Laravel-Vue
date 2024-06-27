@@ -51,10 +51,11 @@
 </template>
 
 <script>
-import axios from 'axios';
 import TaskCard from './TaskCard.vue';
 import TaskFilter from './TaskFilter.vue';
 import TaskForm from './TaskForm.vue';
+import mitt from 'mitt';
+import { ref } from 'vue';
 
 export default {
   components: {
@@ -62,16 +63,32 @@ export default {
     TaskFilter,
     TaskForm,
   },
+  props: {
+    fetchTasks: {
+      type: Function,
+      required: true,
+    },
+    tasks: {
+      type: Array,
+      required: true,
+    },
+  },
+  setup(props) {
+    const emitter = mitt();
+    emitter.on('taskCreated', props.fetchTasks);
 
-  data() {
+    // Возвращаем данные из setup()
     return {
-      tasks: [],
-      isLoading: true,
-      sortOrder: 'asc',
-      showTaskFormToDo: false,
-      showTaskFormInProgress: false,
-      showTaskFormDone: false,
+      emitter,
+      isLoading: ref(false), // Делаем isLoading реактивным
+      sortOrder: ref('asc'), // Делаем sortOrder реактивным
+      showTaskFormToDo: ref(false),
+      showTaskFormInProgress: ref(false),
+      showTaskFormDone: ref(false),
     };
+  },
+  data() {
+    return {};
   },
   computed: {
     sortedToDoTasks() {
@@ -123,28 +140,13 @@ export default {
       });
     },
   },
-  async mounted() {
-    try {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        this.$router.push('/');
-        return;
-      }
-
-      const response = await axios.get('/api/tasks', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      this.tasks = response.data.data;
-    } catch (error) {
-      console.error('Ошибка при получении задач:', error);
-    } finally {
-      this.isLoading = false;
-    }
+  mounted() {
+    // Убираем fetchTasks из mounted, так как он теперь вызывается в App.vue
+    //this.$on('taskCreated', this.fetchTasks);
   },
+  //   beforeUnmount() {
+  //     this.emitter.off('taskCreated', this.fetchTasks);
+  //   },
 };
 </script>
 
