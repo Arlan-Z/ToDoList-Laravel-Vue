@@ -5,7 +5,8 @@
     <p>Status: {{ task.status }}</p>
     <p>Priority: {{ task.prior }}</p>
     <button @click="toggleEditing">{{ isEditing ? 'Cancel' : 'Edit' }}</button>
-    <button @click="deleteTask" class="delete-button">Удалить</button> <div v-if="isEditing">
+    <button @click="deleteTask" class="delete-button">Удалить</button>
+    <div v-if="isEditing">
       <TaskForm
         :task="task"
         :status="task.status"
@@ -13,17 +14,24 @@
         @close-form="toggleEditing"
       />
     </div>
+    <TaskDetails
+      :task="task"
+      v-if="showTaskDetails"
+      @close="showTaskDetails = false"
+    />
   </div>
 </template>
 
 <script>
 import { ref } from 'vue';
-import TaskForm from './TaskForm.vue';
 import axios from 'axios';
+import TaskForm from './TaskForm.vue';
+import TaskDetails from './TaskDetails.vue';
 
 export default {
   components: {
     TaskForm,
+    TaskDetails,
   },
   props: {
     task: {
@@ -37,6 +45,7 @@ export default {
   },
   setup(props) {
     const isEditing = ref(false);
+    const showTaskDetails = ref(false);
 
     const toggleEditing = () => {
       isEditing.value = !isEditing.value;
@@ -45,6 +54,10 @@ export default {
     const handleTaskUpdated = () => {
       props.updateTasks();
       toggleEditing();
+    };
+
+    const openModal = () => {
+      showTaskDetails.value = true;
     };
 
     const deleteTask = async () => {
@@ -71,6 +84,8 @@ export default {
       toggleEditing,
       handleTaskUpdated,
       deleteTask,
+      showTaskDetails,
+      openModal,
     };
   },
 };
@@ -84,7 +99,7 @@ export default {
 }
 
 .delete-button {
-  background-color: #f44336; 
+  background-color: #f44336;
   color: white;
   padding: 8px 12px;
   border: none;
@@ -94,6 +109,6 @@ export default {
 }
 
 .delete-button:hover {
-  background-color: #d32f2f; 
+  background-color: #d32f2f;
 }
 </style>

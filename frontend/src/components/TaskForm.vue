@@ -18,13 +18,13 @@
 
 <script>
 import axios from 'axios';
-import { ref, toRefs } from 'vue';
+import { ref, toRefs, watch } from 'vue';
 
 export default {
   props: {
-    isFormVisible: {
+    isVisible: {
       type: Boolean,
-      required: true,
+      default: false,
     },
     task: {
       type: Object,
@@ -39,16 +39,35 @@ export default {
       type: String,
       required: true,
     },
+    updateTasks: {
+      type: Function,
+      required: true,
+    },
   },
-  emits: ['update:isFormVisible', 'task-created', 'task-updated'],
+  emits: ['update:isVisible', 'task-created', 'task-updated'],
   setup(props, { emit }) {
-    const { task } = toRefs(props);
+    const { task, status, updateTasks } = toRefs(props);
+
     const taskData = ref({
-      title: props.task.title,
-      descr: props.task.descr,
-      status: props.task.status || props.status,
-      prior: props.task.prior,
+      title: task.value.title,
+      descr: task.value.descr,
+      status: task.value.status || status.value,
+      prior: task.value.prior,
     });
+
+    watch(
+      () => props.isVisible,
+      (newVal) => {
+        if (newVal) {
+          taskData.value = {
+            title: task.value.title,
+            descr: task.value.descr,
+            status: task.value.status || status.value,
+            prior: task.value.prior,
+          };
+        }
+      }
+    );
 
     const submitForm = async () => {
       try {
@@ -71,15 +90,9 @@ export default {
             },
           });
           emit('task-created');
-          taskData.value = {
-            title: '',
-            descr: '',
-            status: props.status,
-            prior: 'Low',
-          };
         }
-        emit('close-form');
-        emit('update:isFormVisible', false); 
+        emit('update:isVisible', false);
+        updateTasks.value();
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);
       }
