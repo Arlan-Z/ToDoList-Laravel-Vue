@@ -31,17 +31,13 @@ export default {
         prior: 'Low',
       }),
     },
-    // status: {
-    //   type: String,
-    //   default: 'To Do',
-    // },
-    updateTasks: {
-      type: Function,
+    status: {
+      type: String,
       required: true,
     },
   },
-  setup(props) {
-    const { task, updateTasks } = toRefs(props);
+  setup(props, { emit }) {
+    const { task } = toRefs(props);
     const taskData = ref({
       title: props.task.title,
       descr: props.task.descr,
@@ -62,16 +58,22 @@ export default {
               Authorization: `Bearer ${token}`,
             },
           });
-          updateTasks.value();
+          emit('task-updated');
         } else {
           await axios.post('/api/tasks', taskData.value, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          // Обновляем задачи в App.vue
-          updateTasks.value();
+          emit('task-created');
+          taskData.value = {
+            title: '',
+            descr: '',
+            status: props.status, // Сбрасываем статус на значение по умолчанию
+            prior: 'Low',
+          };
         }
+        emit('close-form');
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);
       }

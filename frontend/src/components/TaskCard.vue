@@ -8,8 +8,9 @@
     <div v-if="isEditing">
       <TaskForm
         :task="task"
-        :updateTasks="updateTasks"
-        @task-updated="toggleEditing"
+        :status="task.status"
+        @task-updated="handleTaskUpdated"
+        @close-form="toggleEditing"
       />
     </div>
   </div>
@@ -29,21 +30,26 @@ export default {
       required: true,
     },
     updateTasks: {
-      // Добавляем пропс updateTasks
       type: Function,
       required: true,
     },
   },
-  setup() {
+  setup(props) {
     const isEditing = ref(false);
 
     const toggleEditing = () => {
       isEditing.value = !isEditing.value;
     };
 
+    const handleTaskUpdated = () => {
+      props.updateTasks();
+      toggleEditing();
+    };
+
     return {
       isEditing,
       toggleEditing,
+      handleTaskUpdated,
     };
   },
 };
