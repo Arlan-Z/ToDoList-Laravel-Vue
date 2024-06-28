@@ -13,8 +13,14 @@
           v-if="showTaskFormToDo"
           status="To Do"
           @task-created="fetchTasks"
+          :updateTasks="fetchTasks"
         />
-        <TaskCard v-for="task in sortedToDoTasks" :key="task.id" :task="task" />
+        <TaskCard
+          v-for="task in sortedToDoTasks"
+          :key="task.id"
+          :task="task"
+          :updateTasks="fetchTasks"
+        />
       </div>
 
       <div class="column">
@@ -26,11 +32,13 @@
           v-if="showTaskFormInProgress"
           status="In Progress"
           @task-created="fetchTasks"
+          :updateTasks="fetchTasks"
         />
         <TaskCard
           v-for="task in sortedInProgressTasks"
           :key="task.id"
           :task="task"
+          :updateTasks="fetchTasks"
         />
       </div>
 
@@ -43,8 +51,14 @@
           v-if="showTaskFormDone"
           status="Done"
           @task-created="fetchTasks"
+          :updateTasks="fetchTasks"
         />
-        <TaskCard v-for="task in sortedDoneTasks" :key="task.id" :task="task" />
+        <TaskCard
+          v-for="task in sortedDoneTasks"
+          :key="task.id"
+          :task="task"
+          :updateTasks="fetchTasks"
+        />
       </div>
     </div>
   </div>
@@ -77,11 +91,10 @@ export default {
     const emitter = mitt();
     emitter.on('taskCreated', props.fetchTasks);
 
-    // Возвращаем данные из setup()
     return {
       emitter,
-      isLoading: ref(false), // Делаем isLoading реактивным
-      sortOrder: ref('asc'), // Делаем sortOrder реактивным
+      isLoading: ref(false),
+      sortOrder: ref('asc'),
       showTaskFormToDo: ref(false),
       showTaskFormInProgress: ref(false),
       showTaskFormDone: ref(false),
@@ -141,16 +154,13 @@ export default {
     },
   },
   mounted() {
-    this.emitter.on('task-updated', this.fetchTasks); //
-    this.emitter.on('task-created', this.fetchTasks); // Обновляем задачи после создания
+    this.emitter.on('task-updated', this.fetchTasks);
+    this.emitter.on('task-created', this.fetchTasks);
     this.emitter.on('task-updated', (updatedTask) => {
-      // Находим индекс задачи в массиве tasks
       const taskIndex = this.tasks.findIndex(
-        (task) => task.id === updatedTask.id // Исправляем форматирование
+        (task) => task.id === updatedTask.id
       );
 
-      // Вместо изменения this.tasks,
-      // генерируем событие и передаем обновленные данные в App.vue:
       if (taskIndex !== -1) {
         this.$emit('tasks-updated', [
           ...this.tasks.slice(0, taskIndex),

@@ -6,7 +6,11 @@
     <p>Priority: {{ task.prior }}</p>
     <button @click="toggleEditing">{{ isEditing ? 'Cancel' : 'Edit' }}</button>
     <div v-if="isEditing">
-      <TaskForm :task="task" @task-updated="handleTaskUpdated" />
+      <TaskForm
+        :task="task"
+        :updateTasks="updateTasks"
+        @task-updated="toggleEditing"
+      />
     </div>
   </div>
 </template>
@@ -24,23 +28,22 @@ export default {
       type: Object,
       required: true,
     },
+    updateTasks: {
+      // Добавляем пропс updateTasks
+      type: Function,
+      required: true,
+    },
   },
-  setup(props, { emit }) {
+  setup() {
     const isEditing = ref(false);
 
     const toggleEditing = () => {
       isEditing.value = !isEditing.value;
     };
 
-    const handleTaskUpdated = (updatedTask) => {
-      isEditing.value = false;
-      emit('task-updated', updatedTask); // Эмитируем обновленную задачу
-    };
-
     return {
       isEditing,
       toggleEditing,
-      handleTaskUpdated,
     };
   },
 };

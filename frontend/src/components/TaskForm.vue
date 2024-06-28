@@ -18,7 +18,7 @@
 
 <script>
 import axios from 'axios';
-import { ref } from 'vue';
+import { ref, toRefs } from 'vue';
 
 export default {
   props: {
@@ -31,12 +31,17 @@ export default {
         prior: 'Low',
       }),
     },
-    status: {
-      type: String,
-      default: 'To Do',
+    // status: {
+    //   type: String,
+    //   default: 'To Do',
+    // },
+    updateTasks: {
+      type: Function,
+      required: true,
     },
   },
-  setup(props, { emit }) {
+  setup(props) {
+    const { task, updateTasks } = toRefs(props);
     const taskData = ref({
       title: props.task.title,
       descr: props.task.descr,
@@ -51,32 +56,24 @@ export default {
           return;
         }
 
-        let updatedTask;
-
-        if (props.task.id) {
-          const response = await axios.patch(
-            `/api/tasks/${props.task.id}`,
-            taskData.value,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          updatedTask = response.data;
-          emit('task-updated', updatedTask); // Эмитируем обновленную задачу
-        } else {
-          const response = await axios.post('/api/tasks', taskData.value, {
+        if (task.value.id) {
+          await axios.patch(`/api/tasks/${task.value.id}`, taskData.value, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          updatedTask = response.data;
-          emit('task-created', updatedTask); // Эмитируем созданную задачу
+          updateTasks.value();
+        } else {
+          await axios.post('/api/tasks', taskData.value, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          // Обновляем задачи в App.vue
+          updateTasks.value();
         }
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);
-        // ... (обработка ошибок)
       }
     };
 

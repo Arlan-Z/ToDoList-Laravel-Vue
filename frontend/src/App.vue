@@ -3,7 +3,7 @@
     <router-view
       :fetchTasks="fetchTasks"
       :tasks="tasks"
-      @task-updated="fetchTasks"
+      :updateTasks="fetchTasks"
     />
   </div>
 </template>
