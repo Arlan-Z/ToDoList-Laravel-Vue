@@ -4,6 +4,7 @@
       :fetchTasks="fetchTasks"
       :tasks="tasks"
       :updateTasks="fetchTasks"
+      @tasks-updated="updateTasks"
     />
   </div>
 </template>
@@ -19,6 +20,7 @@ export default {
     const router = useRouter();
 
     const fetchTasks = async () => {
+      console.log('Before:' + tasks.value);
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -31,7 +33,7 @@ export default {
             Authorization: `Bearer ${token}`,
           },
         });
-
+        console.log('After:' + tasks.value);
         tasks.value = response.data.data;
       } catch (error) {
         console.error('Ошибка при получении задач:', error);
@@ -39,11 +41,14 @@ export default {
       }
     };
 
+    const updateTasks = (newTasks) => {
+      tasks.value = newTasks;
+    };
     onMounted(fetchTasks);
-
     return {
       tasks,
       fetchTasks,
+      updateTasks,
     };
   },
 };

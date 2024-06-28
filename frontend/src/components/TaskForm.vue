@@ -22,6 +22,10 @@ import { ref, toRefs } from 'vue';
 
 export default {
   props: {
+    isFormVisible: {
+      type: Boolean,
+      required: true,
+    },
     task: {
       type: Object,
       default: () => ({
@@ -36,6 +40,7 @@ export default {
       required: true,
     },
   },
+  emits: ['update:isFormVisible', 'task-created', 'task-updated'],
   setup(props, { emit }) {
     const { task } = toRefs(props);
     const taskData = ref({
@@ -69,11 +74,12 @@ export default {
           taskData.value = {
             title: '',
             descr: '',
-            status: props.status, // Сбрасываем статус на значение по умолчанию
+            status: props.status,
             prior: 'Low',
           };
         }
         emit('close-form');
+        emit('update:isFormVisible', false); 
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);
       }

@@ -2,19 +2,23 @@
   <div>
     <h2>Мои Задачи</h2>
     <TaskFilter @update:sort="updateSortOrder" />
-    <div v-if="isLoading" class="loading">Загрузка...</div>
+    <div v-if="isLoading.value" class="loading">Загрузка...</div>
     <div v-else class="task-board">
-      <div v-for="status in statuses" :key="status" class="column">
+      <div
+        v-for="status in statuses"
+        :key="status"
+        class="column"
+      >
         <h3>{{ status }}</h3>
-        <button @click="toggleTaskForm(status)">
+        <button @click="showTaskForm[status] = !showTaskForm[status]">
           {{ showTaskForm[status] ? 'Закрыть форму' : 'Добавить задачу' }}
         </button>
         <TaskForm
           v-if="showTaskForm[status]"
           :status="status"
-          @task-created="handleTaskCreated"
-          @task-updated="handleTaskUpdated"
-          @close-form="closeTaskForm(status)"
+          @task-created="handleTaskCreated(status)"
+          @task-updated="handleTaskUpdated(status)"
+          :updateTasks="fetchTasks"
         />
         <TaskCard
           v-for="task in sortedTasksByStatus(status)"
@@ -31,7 +35,8 @@
 import TaskCard from './TaskCard.vue';
 import TaskFilter from './TaskFilter.vue';
 import TaskForm from './TaskForm.vue';
-import { ref, watch } from 'vue';
+import mitt from 'mitt';
+import { ref} from 'vue';
 
 export default {
   components: {
@@ -50,16 +55,59 @@ export default {
     },
   },
   setup(props) {
+    const emitter = mitt();
+    emitter.on('taskCreated', props.fetchTasks);
     const sortOrder = ref('asc');
     const isLoading = ref(false);
     const showTaskForm = ref({
       'To Do': false,
       'In Progress': false,
-      'Done': false,
+      Done: false,
     });
     const statuses = ['To Do', 'In Progress', 'Done'];
 
-    const sortTasks = (tasks, sortOrder) => {
+    // Возвращаем данные из setup()
+    return {
+      emitter,
+      isLoading,
+      sortOrder,
+      showTaskForm,
+      statuses,
+    };
+  },
+  data() {
+    return {};
+  },
+  computed: {
+    sortedTasksByStatus() { 
+      return (status) => {
+        return this.sortTasks(
+          this.tasks.filter((task) => task.status === status),
+          this.sortOrder
+        );
+      };
+    },
+  },
+  methods: {
+    handleTaskCreated(status) {
+      this.showTaskForm[status] = false; // Закрываем форму
+      this.fetchTasks(); // Обновляем список задач
+    },
+
+    handleTaskUpdated(status) {
+      this.showTaskForm[status] = false; // Закрываем форму после обновления
+    },
+    openModal(status) {
+      this.showTaskForm = true;
+      this.taskFormStatus = status;
+    },
+    closeModal() {
+      this.showTaskForm = false;
+    },
+    updateSortOrder(order) {
+      this.sortOrder.value = order; // Обновляем sortOrder.value
+    },
+    sortTasks(tasks, sortOrder) {
       const priorityOrder = {
         Low: 1,
         Medium: 2,
@@ -70,49 +118,30 @@ export default {
         const priorityA = priorityOrder[a.prior] || 0;
         const priorityB = priorityOrder[b.prior] || 0;
 
-        if (sortOrder === 'asc') {
+        if (sortOrder.value === 'asc') {
           return priorityA - priorityB;
         } else {
           return priorityB - priorityA;
         }
       });
-    };
-
-    const sortedTasksByStatus = (status) => {
-      return sortTasks(
-        props.tasks.filter((task) => task.status === status),
-        sortOrder.value
-      );
-    };
-
-    watch(() => props.tasks, () => {
-      isLoading.value = false;
-    });
-
-    return {
-      isLoading,
-      sortOrder,
-      showTaskForm,
-      statuses,
-      sortedTasksByStatus,
-    };
+    },
   },
-  methods: {
-    handleTaskCreated() {
-      this.fetchTasks();
-    },
-    handleTaskUpdated() {
-      this.fetchTasks();
-    },
-    toggleTaskForm(status) {
-      this.showTaskForm[status] = !this.showTaskForm[status];
-    },
-    closeTaskForm(status) {
-      this.showTaskForm[status] = false;
-    },
-    updateSortOrder(order) {
-      this.sortOrder = order;
-    },
+  mounted() {
+    this.emitter.on('task-updated', this.fetchTasks);
+    this.emitter.on('task-created', this.fetchTasks);
+    this.emitter.on('task-updated', (updatedTask) => {
+      const taskIndex = this.tasks.findIndex(
+        (task) => task.id === updatedTask.id
+      );
+
+      if (taskIndex !== -1) {
+        this.$emit('tasks-updated', [
+          ...this.tasks.slice(0, taskIndex),
+          updatedTask,
+          ...this.tasks.slice(taskIndex + 1),
+        ]);
+      }
+    });
   },
 };
 </script>
