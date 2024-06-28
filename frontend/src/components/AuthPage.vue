@@ -30,13 +30,26 @@ export default {
     };
   },
   methods: {
+    goToTasks(response = null, isNew = false) {
+      try {
+        localStorage.setItem('token', response.data.token);
+        this.$router.push('/tasks');
+        if (isNew) {
+          alert(
+            `Ваш Логин: ${response.data.email}\nВаш Пароль:${response.data.password}`
+          );
+        }
+      } catch (error) {
+        console.error('Токен не валидный', error);
+      }
+    },
     async handleSubmit() {
       try {
         const response = await axios.post('/api/login', {
           email: this.email,
           password: this.password,
         });
-
+        this.goToTasks(response);
         localStorage.setItem('token', response.data.token);
         this.$router.push('/tasks');
       } catch (error) {
@@ -46,8 +59,8 @@ export default {
     },
     async handleRegister() {
       try {
-        await axios.post('/api/register');
-        alert('Регистрация прошла успешно! Теперь вы можете войти.');
+        const response = await axios.get('/api/register');
+        this.goToTasks(response, true);
       } catch (error) {
         console.error('Ошибка регистрации:', error);
         // Добавьте обработку ошибок, например, вывод сообщения об ошибке

@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    CONST DEFAULT_PASSWORD = '12345';
     public function login(Request $request)
     {
         $request->validate([
@@ -34,15 +35,15 @@ class AuthController extends Controller
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('12345'),
+            'password' => Hash::make(self::DEFAULT_PASSWORD),
             'remember_token' => Str::random(10),
         ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'name' => $user->name,
             'email' => $user->email,
+            'password' => self::DEFAULT_PASSWORD,
             'token' => $token,
         ]);
     }

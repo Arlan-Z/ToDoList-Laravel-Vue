@@ -19,7 +19,6 @@
 <script>
 import axios from 'axios';
 import { ref } from 'vue';
-// import { useRouter } from 'vue-router'; // Удалим, если не используется
 
 export default {
   props: {
@@ -49,24 +48,31 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          // router.push({ name: 'AuthPage' }); // Удалим, если не используется
           return;
         }
 
+        let updatedTask;
+
         if (props.task.id) {
-          await axios.patch(`/api/tasks/${props.task.id}`, taskData.value, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          emit('task-updated'); // Emit event after task is updated
+          const response = await axios.patch(
+            `/api/tasks/${props.task.id}`,
+            taskData.value,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          updatedTask = response.data;
+          emit('task-updated', updatedTask); // Эмитируем обновленную задачу
         } else {
-          await axios.post('/api/tasks', taskData.value, {
+          const response = await axios.post('/api/tasks', taskData.value, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          emit('task-created');
+          updatedTask = response.data;
+          emit('task-created', updatedTask); // Эмитируем созданную задачу
         }
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);

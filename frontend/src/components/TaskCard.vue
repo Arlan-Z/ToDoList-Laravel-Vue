@@ -32,9 +32,9 @@ export default {
       isEditing.value = !isEditing.value;
     };
 
-    const handleTaskUpdated = () => {
+    const handleTaskUpdated = (updatedTask) => {
       isEditing.value = false;
-      emit('task-updated'); // Добавляем emit для обновления задач
+      emit('task-updated', updatedTask); // Эмитируем обновленную задачу
     };
 
     return {
