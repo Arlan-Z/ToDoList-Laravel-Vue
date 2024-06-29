@@ -1,9 +1,9 @@
 <template>
   <div class="task-card">
-    <h4>{{ task.title }}</h4>
-    <p>{{ task.descr }}</p>
+    <h4 @click="openModal">{{ task.title }}</h4>
+    <!-- <p>{{ task.descr }}</p>
     <p>Status: {{ task.status }}</p>
-    <p>Priority: {{ task.prior }}</p>
+    <p>Priority: {{ task.prior }}</p> -->
     <button @click="toggleEditing">{{ isEditing ? 'Cancel' : 'Edit' }}</button>
     <button @click="deleteTask" class="delete-button">Удалить</button>
     <div v-if="isEditing">
@@ -14,11 +14,7 @@
         @close-form="toggleEditing"
       />
     </div>
-    <TaskDetails
-      :task="task"
-      v-if="showTaskDetails"
-      @close="showTaskDetails = false"
-    />
+    <TaskDetails :task="task" v-if="showTaskDetails" @close="closeModal" />
   </div>
 </template>
 
@@ -60,6 +56,10 @@ export default {
       showTaskDetails.value = true;
     };
 
+    const closeModal = () => {
+      showTaskDetails.value = false;
+    };
+
     const deleteTask = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -86,6 +86,7 @@ export default {
       deleteTask,
       showTaskDetails,
       openModal,
+      closeModal,
     };
   },
 };

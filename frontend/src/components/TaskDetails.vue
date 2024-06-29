@@ -1,7 +1,8 @@
+/* eslint-disable */
 <template>
   <div class="modal" v-if="showModal">
     <div class="modal-content">
-      <span class="close" @click="closeModal">×</span>
+      <span class="close" @click.stop="closeModal">×</span>
       <h2>{{ task.title }}</h2>
       <p v-if="task.descr">Описание: {{ task.descr }}</p>
       <p>Статус: {{ task.status }}</p>
@@ -21,11 +22,13 @@ export default {
   },
   data() {
     return {
-      showModal: false,
+      showModal: true,
     };
   },
   methods: {
     closeModal() {
+      console.log("closeModal called");
+      this.$emit("close");
       this.showModal = false;
     },
   },
