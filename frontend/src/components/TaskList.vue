@@ -2,12 +2,12 @@
   <div>
     <h2>Мои Задачи</h2>
     <TaskFilter @update:sort="updateSortOrder" />
-    <div v-if="isLoading.value" class="loading">Загрузка...</div>
+    <div v-if="isLoading" class="loading">Загрузка...</div>
     <div v-else class="task-board">
       <div v-for="status in statuses" :key="status" class="column">
         <h3>{{ status }}</h3>
         <button @click="toggleTaskForm(status)">
-          {{ showTaskForm[status] ? 'Закрыть форму' : 'Добавить задачу' }}
+          {{ showTaskForm[status] ? "Закрыть форму" : "Добавить задачу" }}
         </button>
         <TaskForm
           v-if="showTaskForm[status]"
@@ -29,11 +29,10 @@
 </template>
 
 <script>
-import TaskCard from './TaskCard.vue';
-import TaskFilter from './TaskFilter.vue';
-import TaskForm from './TaskForm.vue';
-import mitt from 'mitt';
-import { ref, computed } from 'vue';
+import TaskCard from "./TaskCard.vue";
+import TaskFilter from "./TaskFilter.vue";
+import TaskForm from "./TaskForm.vue";
+import { ref, computed } from "vue";
 
 export default {
   components: {
@@ -52,18 +51,16 @@ export default {
     },
   },
   setup(props) {
-    const emitter = mitt();
-    emitter.on('taskCreated', props.fetchTasks);
-    const sortOrder = ref('asc');
+    const sortOrder = ref("asc");
     const isLoading = ref(false);
     const showTaskForm = ref({
-      'To Do': false,
-      'In Progress': false,
+      "To Do": false,
+      "In Progress": false,
       Done: false,
     });
-    const statuses = ['To Do', 'In Progress', 'Done'];
+    const statuses = ["To Do", "In Progress", "Done"];
 
-    const sortTasks = (tasks, sortOrder) => {
+    const sortTasks = (tasks, order) => {
       const priorityOrder = {
         Low: 1,
         Medium: 2,
@@ -74,7 +71,7 @@ export default {
         const priorityA = priorityOrder[a.prior] || 0;
         const priorityB = priorityOrder[b.prior] || 0;
 
-        if (sortOrder.value === 'asc') {
+        if (order === "asc") {
           return priorityA - priorityB;
         } else {
           return priorityB - priorityA;
@@ -89,13 +86,17 @@ export default {
       );
     });
 
+    const updateSortOrder = (order) => {
+      sortOrder.value = order;
+    };
+
     return {
-      emitter,
       isLoading,
       sortOrder,
       showTaskForm,
       statuses,
       sortedTasksByStatus,
+      updateSortOrder,
     };
   },
   methods: {
@@ -107,9 +108,6 @@ export default {
     },
     toggleTaskForm(status) {
       this.showTaskForm[status] = !this.showTaskForm[status];
-    },
-    updateSortOrder(order) {
-      this.sortOrder.value = order;
     },
   },
 };
