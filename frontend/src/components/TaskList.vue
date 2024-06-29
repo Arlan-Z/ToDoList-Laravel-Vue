@@ -4,7 +4,7 @@
     <TaskFilter @update:sort="updateSortOrder" />
     <div v-if="isLoading" class="loading">Загрузка...</div>
     <div v-else class="task-board">
-      <div v-for="status in statuses" :key="status" class="column">
+      <div v-for="status in statuses" :key="status" class="column" :data-status="status">
         <h3>{{ status }}</h3>
         <button @click="toggleTaskForm(status)">
           {{ showTaskForm[status] ? "Закрыть форму" : "Добавить задачу" }}
@@ -17,12 +17,20 @@
           :updateTasks="fetchTasks"
           v-model:isVisible="showTaskForm[status]"
         />
-        <TaskCard
-          v-for="task in sortedTasksByStatus(status)"
-          :key="task.id"
-          :task="task"
-          :updateTasks="fetchTasks"
-        />
+        <draggable
+          v-if="tasksByStatus[status] && tasksByStatus[status].length"
+          v-model="tasksByStatus[status]"
+          group="tasks"
+          @end="onEnd"
+          item-key="id"
+          class="task-list"
+          :data-status="status"
+        >
+          <template #item="{ element }">
+            <TaskCard :task="element" :updateTasks="fetchTasks" />
+          </template>
+        </draggable>
+        <div v-if="!tasksByStatus[status].length" class="no-tasks">Нет задач</div>
       </div>
     </div>
   </div>
@@ -32,13 +40,16 @@
 import TaskCard from "./TaskCard.vue";
 import TaskFilter from "./TaskFilter.vue";
 import TaskForm from "./TaskForm.vue";
-import { ref, computed } from "vue";
+import draggable from "vuedraggable";
+import axios from "axios";
+import { ref, computed, watchEffect } from "vue";
 
 export default {
   components: {
     TaskCard,
     TaskFilter,
     TaskForm,
+    draggable,
   },
   props: {
     fetchTasks: {
@@ -86,8 +97,73 @@ export default {
       );
     });
 
+    const tasksByStatus = ref({
+      "To Do": [],
+      "In Progress": [],
+      Done: [],
+    });
+
+    watchEffect(() => {
+      tasksByStatus.value["To Do"] = sortedTasksByStatus.value("To Do");
+      tasksByStatus.value["In Progress"] = sortedTasksByStatus.value("In Progress");
+      tasksByStatus.value["Done"] = sortedTasksByStatus.value("Done");
+    });
+
     const updateSortOrder = (order) => {
       sortOrder.value = order;
+    };
+
+    const onEnd = async (event) => {
+      const { newIndex, oldIndex, to } = event;
+      const newStatus = to ? to.getAttribute("data-status") : null;
+      console.log(
+        "newIndex:",
+        newIndex,
+        "oldIndex:",
+        oldIndex,
+        "to:",
+        to,
+        "newStatus:",
+        newStatus
+      );
+
+      if (newStatus) {
+        const task = tasksByStatus.value[newStatus][newIndex];
+        console.log("task:", task);
+
+        if (task && task.id) {
+          if (task.status !== newStatus) {
+            task.status = newStatus;
+
+            try {
+              const token = localStorage.getItem("token");
+              if (!token) {
+                // Обработка ошибки: пользователь не авторизован
+                return;
+              }
+
+              await axios.patch(
+                `/api/tasks/${task.id}`,
+                { status: newStatus },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              props.fetchTasks();
+            } catch (error) {
+              console.error("Ошибка при обновлении статуса задачи:", error);
+              // Обработка ошибки
+            }
+          }
+        } else {
+          console.error("Ошибка: Не удалось получить идентификатор задачи.");
+        }
+      } else {
+        console.error("Ошибка: Не удалось получить новый статус.");
+      }
     };
 
     return {
@@ -97,6 +173,8 @@ export default {
       statuses,
       sortedTasksByStatus,
       updateSortOrder,
+      tasksByStatus,
+      onEnd,
     };
   },
   methods: {
@@ -124,6 +202,10 @@ export default {
   border: 1px solid #ccc;
   padding: 16px;
   border-radius: 4px;
+}
+
+.task-list {
+  min-height: 50px;
 }
 
 .loading {

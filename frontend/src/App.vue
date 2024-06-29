@@ -20,7 +20,6 @@ export default {
     const router = useRouter();
 
     const fetchTasks = async () => {
-      console.log('Before:' + tasks.value);
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -33,7 +32,6 @@ export default {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log('After:' + tasks.value);
         tasks.value = response.data.data;
       } catch (error) {
         console.error('Ошибка при получении задач:', error);
