@@ -18,7 +18,6 @@
           v-model:isVisible="showTaskForm[status]"
         />
         <draggable
-          v-if="tasksByStatus[status] && tasksByStatus[status].length"
           v-model="tasksByStatus[status]"
           group="tasks"
           @end="onEnd"
@@ -29,8 +28,10 @@
           <template #item="{ element }">
             <TaskCard :task="element" :updateTasks="fetchTasks" />
           </template>
+          <template #empty>
+            <div class="placeholder">Перетащите задачи сюда</div>
+          </template>
         </draggable>
-        <div v-if="!tasksByStatus[status].length" class="no-tasks">Нет задач</div>
       </div>
     </div>
   </div>
@@ -114,18 +115,9 @@ export default {
     };
 
     const onEnd = async (event) => {
-      const { newIndex, oldIndex, to } = event;
+      const { newIndex, to } = event;
       const newStatus = to ? to.getAttribute("data-status") : null;
-      console.log(
-        "newIndex:",
-        newIndex,
-        "oldIndex:",
-        oldIndex,
-        "to:",
-        to,
-        "newStatus:",
-        newStatus
-      );
+      console.log("newIndex:", newIndex, "to:", to, "newStatus:", newStatus);
 
       if (newStatus) {
         const task = tasksByStatus.value[newStatus][newIndex];
@@ -214,5 +206,11 @@ export default {
 
 .no-tasks {
   color: #888;
+}
+
+.placeholder {
+  padding: 10px;
+  color: #aaa;
+  text-align: center;
 }
 </style>
