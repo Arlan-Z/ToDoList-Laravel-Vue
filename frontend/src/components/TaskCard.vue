@@ -1,25 +1,28 @@
 <template>
-  <div class="task-card">
-    <h4 @click="openModal">{{ task.title }}</h4>
-    <!-- <p>{{ task.descr }}</p>
-    <p>Status: {{ task.status }}</p>
-    <p>Priority: {{ task.prior }}</p> -->
-    <button @click="toggleEditing">{{ isEditing ? 'Cancel' : 'Edit' }}</button>
-    <button @click="deleteTask" class="delete-button">Удалить</button>
-    <div v-if="isEditing">
-      <TaskForm
-        :task="task"
-        :status="task.status"
-        @task-updated="handleTaskUpdated"
-        @close-form="toggleEditing"
-      />
-    </div>
+  <v-card :class="priorityClass" class="task-card">
+    <v-card-title @click="openModal">{{ task.title }}</v-card-title>
+    <v-card-actions>
+      <v-btn text @click="toggleEditing">
+        {{ isEditing ? 'Отмена' : 'Редактировать' }}
+      </v-btn>
+      <v-btn text color="error" @click="deleteTask">Удалить</v-btn>
+    </v-card-actions>
+    <v-dialog v-model="isEditing" max-width="500px">
+      <template v-slot:default="dialog">
+        <TaskForm
+          :task="task"
+          :status="task.status"
+          @task-updated="handleTaskUpdated"
+          @close-form="dialog.close"
+        />
+      </template>
+    </v-dialog>
     <TaskDetails :task="task" v-if="showTaskDetails" @close="closeModal" />
-  </div>
+  </v-card>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import TaskForm from './TaskForm.vue';
 import TaskDetails from './TaskDetails.vue';
@@ -78,6 +81,18 @@ export default {
         console.error('Ошибка при удалении задачи:', error);
       }
     };
+    const priorityClass = computed(() => {
+      switch (props.task.prior) {
+        case 'High':
+          return 'high-priority';
+        case 'Medium':
+          return 'medium-priority';
+        case 'Low':
+          return 'low-priority';
+        default:
+          return '';
+      }
+    });
 
     return {
       isEditing,
@@ -87,6 +102,7 @@ export default {
       showTaskDetails,
       openModal,
       closeModal,
+      priorityClass,
     };
   },
 };
@@ -94,22 +110,29 @@ export default {
 
 <style scoped>
 .task-card {
-  border: 1px solid #ccc;
-  padding: 10px;
   margin: 10px 0;
 }
 
-.delete-button {
-  background-color: #f44336;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
+.v-card-title {
   cursor: pointer;
-  margin-left: 10px;
 }
 
-.delete-button:hover {
-  background-color: #d32f2f;
+.v-btn {
+  margin: 5px;
+}
+
+.high-priority {
+  background-color: #f44336 !important;
+  color: white;
+}
+
+.medium-priority {
+  background-color: #ffeb3b !important;
+  color: black;
+}
+
+.low-priority {
+  background-color: #4caf50 !important;
+  color: white;
 }
 </style>

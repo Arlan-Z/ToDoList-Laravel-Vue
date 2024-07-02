@@ -1,40 +1,62 @@
 <template>
-  <div>
-    <h2>Мои Задачи</h2>
-    <TaskFilter @update:sort="updateSortOrder" />
-    <div v-if="isLoading" class="loading">Загрузка...</div>
-    <div v-else class="task-board">
-      <div v-for="status in statuses" :key="status" class="column" :data-status="status">
-        <h3>{{ status }}</h3>
-        <button @click="toggleTaskForm(status)">
-          {{ showTaskForm[status] ? "Закрыть форму" : "Добавить задачу" }}
-        </button>
-        <TaskForm
-          v-if="showTaskForm[status]"
-          :status="status"
-          @task-created="handleTaskCreated"
-          @task-updated="handleTaskUpdated"
-          :updateTasks="fetchTasks"
-          v-model:isVisible="showTaskForm[status]"
-        />
-        <draggable
-          v-model="tasksByStatus[status]"
-          group="tasks"
-          @end="onEnd"
-          item-key="id"
-          class="task-list"
-          :data-status="status"
-        >
-          <template #item="{ element }">
-            <TaskCard :task="element" :updateTasks="fetchTasks" />
-          </template>
-          <template #empty>
-            <div class="placeholder">Перетащите задачи сюда</div>
-          </template>
-        </draggable>
-      </div>
-    </div>
-  </div>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title>
+            <h2>Мои Задачи</h2>
+          </v-card-title>
+          <v-card-subtitle>
+            <TaskFilter @update:sort="updateSortOrder" />
+          </v-card-subtitle>
+          <v-card-text>
+            <div v-if="isLoading" class="loading">Загрузка...</div>
+            <v-row v-else>
+              <v-col v-for="status in statuses" :key="status" cols="12" md="4">
+                <v-card>
+                  <v-card-title>
+                    <h3>{{ status }}</h3>
+                  </v-card-title>
+                  <v-card-actions>
+                    <v-btn color="primary" @click="toggleTaskForm(status)">
+                      {{ showTaskForm[status] ? "Закрыть форму" : "Добавить задачу" }}
+                    </v-btn>
+                  </v-card-actions>
+                  <TaskForm
+                    v-if="showTaskForm[status]"
+                    :status="status"
+                    @task-created="handleTaskCreated"
+                    @task-updated="handleTaskUpdated"
+                    :updateTasks="fetchTasks"
+                    v-model:isVisible="showTaskForm[status]"
+                  />
+                  <v-card-text>
+                    <draggable
+                      v-model="tasksByStatus[status]"
+                      group="tasks"
+                      @end="onEnd"
+                      item-key="id"
+                      class="task-list"
+                      :data-status="status"
+                    >
+                      <template #item="{ element }">
+                        <TaskCard :task="element" :updateTasks="fetchTasks" />
+                      </template>
+                      <template #empty>
+                        <v-alert type="info" border="left" colored-border>
+                          Перетащите задачи сюда
+                        </v-alert>
+                      </template>
+                    </draggable>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -202,10 +224,8 @@ export default {
 
 .loading {
   font-style: italic;
-}
-
-.no-tasks {
-  color: #888;
+  text-align: center;
+  margin-top: 20px;
 }
 
 .placeholder {

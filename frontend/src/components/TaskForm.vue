@@ -1,19 +1,38 @@
 <template>
-  <div class="task-form">
-    <input v-model="taskData.title" placeholder="Title" />
-    <textarea v-model="taskData.descr" placeholder="Description"></textarea>
-    <select v-model="taskData.status">
-      <option value="To Do">To Do</option>
-      <option value="In Progress">In Progress</option>
-      <option value="Done">Done</option>
-    </select>
-    <select v-model="taskData.prior">
-      <option value="Low">Low</option>
-      <option value="Medium">Medium</option>
-      <option value="High">High</option>
-    </select>
-    <button @click="submitForm">Save</button>
-  </div>
+  <v-card outlined class="task-form">
+    <v-card-title>
+      <h3>{{ task.id ? 'Редактировать Задачу' : 'Создать Задачу' }}</h3>
+    </v-card-title>
+    <v-card-text>
+      <v-form>
+        <v-text-field
+          v-model="taskData.title"
+          label="Заголовок"
+          outlined
+          dense
+        />
+        <v-textarea v-model="taskData.descr" label="Описание" outlined dense />
+        <v-select
+          v-model="taskData.status"
+          :items="statuses"
+          label="Статус"
+          outlined
+          dense
+        />
+        <v-select
+          v-model="taskData.prior"
+          :items="priorities"
+          label="Приоритет"
+          outlined
+          dense
+        />
+      </v-form>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="primary" @click="submitForm">Сохранить</v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
@@ -54,6 +73,9 @@ export default {
       status: task.value.status || status.value,
       prior: task.value.prior,
     });
+
+    const statuses = ref(['To Do', 'In Progress', 'Done']);
+    const priorities = ref(['Low', 'Medium', 'High']);
 
     watch(
       () => props.isVisible,
@@ -101,6 +123,8 @@ export default {
     return {
       taskData,
       submitForm,
+      statuses,
+      priorities,
     };
   },
 };

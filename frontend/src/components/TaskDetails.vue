@@ -6,7 +6,7 @@
       <h2>{{ task.title }}</h2>
       <p v-if="task.descr">Описание: {{ task.descr }}</p>
       <p>Статус: {{ task.status }}</p>
-      <p>Приоритет: {{ task.prior }}</p>
+      <p :class="priorityClass">Приоритет: {{ task.prior }}</p>
       <p>Создано: {{ task.createdAt }}</p>
     </div>
   </div>
@@ -36,6 +36,12 @@ export default {
 </script>
 
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+body {
+  font-family: "Roboto", sans-serif;
+}
+
 .modal {
   display: block;
   position: fixed;
@@ -68,5 +74,17 @@ export default {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.priority-high {
+  color: red;
+}
+
+.priority-medium {
+  color: #ffd700; /* Золотой цвет для medium */
+}
+
+.priority-low {
+  color: green;
 }
 </style>

@@ -1,23 +1,35 @@
 <template>
-  <div class="auth-container">
-    <h2>Авторизация</h2>
-    <form @submit.prevent="handleSubmit" class="auth-form">
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <div class="form-buttons">
-        <button type="submit" class="btn btn-primary">Войти</button>
-        <button type="button" class="btn btn-secondary" @click="handleRegister">
-          Регистрация
-        </button>
-      </div>
-    </form>
-  </div>
+  <v-container class="auth-container" max-width="400">
+    <v-card>
+      <v-card-title class="text-center">
+        <h2>Авторизация</h2>
+      </v-card-title>
+      <v-card-text>
+        <v-form @submit.prevent="handleSubmit">
+          <v-text-field
+            v-model="email"
+            label="Email"
+            type="email"
+            required
+            outlined
+            dense
+          ></v-text-field>
+          <v-text-field
+            v-model="password"
+            label="Пароль"
+            type="password"
+            required
+            outlined
+            dense
+          ></v-text-field>
+          <div class="form-buttons">
+            <v-btn type="submit" color="primary" class="mr-2">Войти</v-btn>
+            <v-btn @click="handleRegister" color="secondary">Регистрация</v-btn>
+          </div>
+        </v-form>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 <script>
@@ -76,72 +88,16 @@ export default {
 
 <style scoped>
 .auth-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  margin-top: 50px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.auth-form {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
+.v-card-title {
   font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 .form-buttons {
   display: flex;
   justify-content: space-between;
-}
-
-.btn {
-  margin: 0 5px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: #fff;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
+  margin-top: 20px;
 }
 </style>
