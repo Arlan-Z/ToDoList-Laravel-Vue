@@ -11,7 +11,8 @@
 # New User Auth
 ![](images/auth.png)
 # Features
-New user authorization through Faker   
+New user creation through Faker   
 Task can be dragged between columns  
 Task can be edited and deleted  
+Tasks can be filtered by priority  
 Authorization using tokens  

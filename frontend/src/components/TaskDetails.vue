@@ -1,13 +1,12 @@
-/* eslint-disable */
 <template>
   <div class="modal" v-if="showModal">
     <div class="modal-content">
       <span class="close" @click.stop="closeModal">×</span>
-      <h2>{{ task.title }}</h2>
-      <p v-if="task.descr">Описание: {{ task.descr }}</p>
-      <p>Статус: {{ task.status }}</p>
-      <p :class="priorityClass">Приоритет: {{ task.prior }}</p>
-      <p>Создано: {{ task.createdAt }}</p>
+      <h2>{{ task?.title }}</h2>
+      <p v-if="task?.descr">Описание: {{ task.descr }}</p>
+      <p>Статус: {{ task?.status }}</p>
+      <p :class="priorityClass">Приоритет: {{ task?.prior }}</p>
+      <p>Создано: {{ task?.createdAt }}</p>
     </div>
   </div>
 </template>
@@ -24,6 +23,15 @@ export default {
     return {
       showModal: true,
     };
+  },
+  computed: {
+    priorityClass() {
+      return {
+        "priority-high": this.task?.prior === "High",
+        "priority-medium": this.task?.prior === "Medium",
+        "priority-low": this.task?.prior === "Low",
+      };
+    },
   },
   methods: {
     closeModal() {

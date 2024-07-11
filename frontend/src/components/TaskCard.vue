@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
   <v-card :class="priorityClass" class="task-card">
     <v-card-title @click="openModal">{{ task.title }}</v-card-title>
@@ -17,7 +18,11 @@
         />
       </template>
     </v-dialog>
-    <TaskDetails :task="task" v-if="showTaskDetails" @close="closeModal" />
+    <v-dialog v-model="showTaskDetails" max-width="500px">
+      <template v-slot:default="dialog">
+        <TaskDetails :task="task" @close="closeModal" />
+      </template>
+    </v-dialog>
   </v-card>
 </template>
 
