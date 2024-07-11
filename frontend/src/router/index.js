@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AuthPage from '../components/AuthPage.vue';
-import TaskList from '../components/TaskList.vue'; // Не забудьте импортировать компонент!
+import TaskList from '../components/TaskList.vue';
 
 const routes = [
   {
@@ -9,7 +9,7 @@ const routes = [
     component: AuthPage,
   },
   {
-    path: '/tasks', // Добавили маршрут для /tasks
+    path: '/tasks',
     name: 'TaskList',
     component: TaskList,
   },
@@ -22,7 +22,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.name === 'TaskList' && !localStorage.getItem('token')) {
-    next({ name: 'AuthPage' }); // Перенаправление на авторизацию
+    next({ name: 'AuthPage' });
   } else {
     next();
   }

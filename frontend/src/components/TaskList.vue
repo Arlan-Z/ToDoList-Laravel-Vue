@@ -64,8 +64,9 @@ import TaskCard from "./TaskCard.vue";
 import TaskFilter from "./TaskFilter.vue";
 import TaskForm from "./TaskForm.vue";
 import draggable from "vuedraggable";
+import { useStore } from "vuex";
+import { ref, computed, watchEffect, onMounted } from "vue";
 import axios from "axios";
-import { ref, computed, watchEffect } from "vue";
 
 export default {
   components: {
@@ -74,25 +75,27 @@ export default {
     TaskForm,
     draggable,
   },
-  props: {
-    fetchTasks: {
-      type: Function,
-      required: true,
-    },
-    tasks: {
-      type: Array,
-      required: true,
-    },
-  },
-  setup(props) {
+  setup() {
+    const store = useStore();
     const sortOrder = ref("asc");
-    const isLoading = ref(false);
+    const isLoading = ref(true);
     const showTaskForm = ref({
       "To Do": false,
       "In Progress": false,
       Done: false,
     });
     const statuses = ["To Do", "In Progress", "Done"];
+    const tasksByStatus = ref({
+      "To Do": [],
+      "In Progress": [],
+      Done: [],
+    });
+
+    const fetchTasks = () => {
+      return store.dispatch("fetchTasks");
+    };
+
+    const tasks = computed(() => store.getters.tasks);
 
     const sortTasks = (tasks, order) => {
       const priorityOrder = {
@@ -100,11 +103,9 @@ export default {
         Medium: 2,
         High: 3,
       };
-
       return [...tasks].sort((a, b) => {
         const priorityA = priorityOrder[a.prior] || 0;
         const priorityB = priorityOrder[b.prior] || 0;
-
         if (order === "asc") {
           return priorityA - priorityB;
         } else {
@@ -114,16 +115,11 @@ export default {
     };
 
     const sortedTasksByStatus = computed(() => (status) => {
+      if (!tasks.value) return [];
       return sortTasks(
-        props.tasks.filter((task) => task.status === status),
+        tasks.value.filter((task) => task.status === status),
         sortOrder.value
       );
-    });
-
-    const tasksByStatus = ref({
-      "To Do": [],
-      "In Progress": [],
-      Done: [],
     });
 
     watchEffect(() => {
@@ -136,26 +132,32 @@ export default {
       sortOrder.value = order;
     };
 
+    const handleTaskCreated = () => {
+      fetchTasks();
+    };
+
+    const handleTaskUpdated = () => {
+      fetchTasks();
+    };
+
+    const toggleTaskForm = (status) => {
+      showTaskForm.value[status] = !showTaskForm.value[status];
+    };
+
     const onEnd = async (event) => {
       const { newIndex, to } = event;
       const newStatus = to ? to.getAttribute("data-status") : null;
-      console.log("newIndex:", newIndex, "to:", to, "newStatus:", newStatus);
-
       if (newStatus) {
         const task = tasksByStatus.value[newStatus][newIndex];
-        console.log("task:", task);
-
         if (task && task.id) {
           if (task.status !== newStatus) {
             task.status = newStatus;
-
             try {
-              const token = localStorage.getItem("token");
+              const token = store.getters.token;
               if (!token) {
                 // Обработка ошибки: пользователь не авторизован
                 return;
               }
-
               await axios.patch(
                 `/api/tasks/${task.id}`,
                 { status: newStatus },
@@ -165,20 +167,20 @@ export default {
                   },
                 }
               );
-
-              props.fetchTasks();
+              fetchTasks();
             } catch (error) {
               console.error("Ошибка при обновлении статуса задачи:", error);
-              // Обработка ошибки
             }
           }
-        } else {
-          console.error("Ошибка: Не удалось получить идентификатор задачи.");
         }
-      } else {
-        console.error("Ошибка: Не удалось получить новый статус.");
       }
     };
+
+    onMounted(() => {
+      fetchTasks().finally(() => {
+        isLoading.value = false;
+      });
+    });
 
     return {
       isLoading,
@@ -188,19 +190,12 @@ export default {
       sortedTasksByStatus,
       updateSortOrder,
       tasksByStatus,
+      handleTaskCreated,
+      handleTaskUpdated,
+      toggleTaskForm,
       onEnd,
+      fetchTasks,
     };
-  },
-  methods: {
-    handleTaskCreated() {
-      this.fetchTasks();
-    },
-    handleTaskUpdated() {
-      this.fetchTasks();
-    },
-    toggleTaskForm(status) {
-      this.showTaskForm[status] = !this.showTaskForm[status];
-    },
   },
 };
 </script>
@@ -210,24 +205,20 @@ export default {
   display: flex;
   gap: 16px;
 }
-
 .column {
   flex: 1;
   border: 1px solid #ccc;
   padding: 16px;
   border-radius: 4px;
 }
-
 .task-list {
   min-height: 50px;
 }
-
 .loading {
   font-style: italic;
   text-align: center;
   margin-top: 20px;
 }
-
 .placeholder {
   padding: 10px;
   color: #aaa;

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="auth-container" max-width="400">
+  <v-container class="auth-container" style="max-width: 400px">
     <v-card>
       <v-card-title class="text-center">
         <h2>Авторизация</h2>
@@ -33,53 +33,54 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
+import { mapActions } from "vuex";
 
 // Устанавливаем базовый URL для Axios
-axios.defaults.baseURL = 'http://127.0.0.1:8000';
+axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 export default {
   data() {
     return {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     };
   },
   methods: {
-    goToTasks(response = null, isNew = false) {
+    ...mapActions(["fetchTasks", "clearTasks", "setToken", "clearToken"]),
+    async goToTasks(response = null, isNew = false) {
       try {
-        localStorage.setItem('token', response.data.token);
-        this.$router.push('/tasks');
+        const token = response.data.token;
+        this.setToken(token); // Устанавливаем токен в хранилище
+        this.clearTasks(); // Очищаем задачи перед загрузкой новых
+        await this.fetchTasks(); // Загружаем новые задачи
+        this.$router.push("/tasks");
         if (isNew) {
           alert(
             `Ваш Логин: ${response.data.email}\nВаш Пароль:${response.data.password}`
           );
         }
       } catch (error) {
-        console.error('Токен не валидный', error);
+        console.error("Ошибка при переходе к задачам:", error);
       }
     },
     async handleSubmit() {
       try {
-        const response = await axios.post('/api/login', {
+        const response = await axios.post("/api/login", {
           email: this.email,
           password: this.password,
         });
-        this.goToTasks(response);
-        localStorage.setItem('token', response.data.token);
-        this.$router.push('/tasks');
+        await this.goToTasks(response);
       } catch (error) {
-        console.error('Ошибка авторизации:', error);
-        // Добавьте обработку ошибок, например, вывод сообщения об ошибке
+        console.error("Ошибка авторизации:", error);
       }
     },
     async handleRegister() {
       try {
-        const response = await axios.get('/api/register');
-        this.goToTasks(response, true);
+        const response = await axios.get("/api/register");
+        await this.goToTasks(response, true);
       } catch (error) {
-        console.error('Ошибка регистрации:', error);
-        // Добавьте обработку ошибок, например, вывод сообщения об ошибке
+        console.error("Ошибка регистрации:", error);
       }
     },
   },
