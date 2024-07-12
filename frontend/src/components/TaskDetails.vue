@@ -1,14 +1,45 @@
 <template>
-  <div class="modal" v-if="showModal">
-    <div class="modal-content">
-      <span class="close" @click.stop="closeModal">×</span>
-      <h2>{{ task?.title }}</h2>
-      <p v-if="task?.descr">Описание: {{ task.descr }}</p>
-      <p>Статус: {{ task?.status }}</p>
-      <p :class="priorityClass">Приоритет: {{ task?.prior }}</p>
-      <p>Создано: {{ task?.createdAt }}</p>
-    </div>
-  </div>
+  <v-dialog v-model="dialog" max-width="500px">
+    <v-card>
+      <v-card-title class="headline">Детали Задачи</v-card-title>
+      <v-divider></v-divider>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+              label="Название"
+              v-model="localTask.title"
+              readonly
+              outlined
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-textarea
+              label="Описание"
+              v-model="localTask.descr"
+              readonly
+              outlined
+              rows="4"
+            ></v-textarea>
+          </v-col>
+          <v-col cols="12">
+            <v-select
+              label="Приоритет"
+              :items="priorities"
+              v-model="localTask.prior"
+              readonly
+              outlined
+            ></v-select>
+          </v-col>
+        </v-row>
+      </v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="closeDialog">Закрыть</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -21,78 +52,26 @@ export default {
   },
   data() {
     return {
-      showModal: true,
+      dialog: true,
+      localTask: { ...this.task },
+      priorities: ["High", "Medium", "Low"],
     };
   },
-  computed: {
-    priorityClass() {
-      return {
-        "priority-high": this.task?.prior === "High",
-        "priority-medium": this.task?.prior === "Medium",
-        "priority-low": this.task?.prior === "Low",
-      };
-    },
-  },
   methods: {
-    closeModal() {
-      console.log("closeModal called");
+    closeDialog() {
+      this.dialog = false;
       this.$emit("close");
-      this.showModal = false;
     },
   },
 };
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
-
-body {
-  font-family: "Roboto", sans-serif;
+.headline {
+  font-size: 1.5rem;
+  font-weight: 500;
 }
-
-.modal {
-  display: block;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 60%;
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.priority-high {
-  color: red;
-}
-
-.priority-medium {
-  color: #ffd700; /* Золотой цвет для medium */
-}
-
-.priority-low {
-  color: green;
+.v-card {
+  margin: auto;
 }
 </style>

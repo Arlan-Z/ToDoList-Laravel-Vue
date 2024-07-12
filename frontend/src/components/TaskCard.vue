@@ -9,19 +9,15 @@
       <v-btn text color="error" @click="deleteTask">Удалить</v-btn>
     </v-card-actions>
     <v-dialog v-model="isEditing" max-width="500px">
-      <template v-slot:default="dialog">
-        <TaskForm
-          :task="task"
-          :status="task.status"
-          @task-updated="handleTaskUpdated"
-          @close-form="dialog.close"
-        />
-      </template>
+      <TaskForm
+        :task="task"
+        :status="task.status"
+        @task-updated="handleTaskUpdated"
+        @close-form="toggleEditing"
+      />
     </v-dialog>
     <v-dialog v-model="showTaskDetails" max-width="500px">
-      <template v-slot:default="dialog">
-        <TaskDetails :task="task" @close="closeModal" />
-      </template>
+      <TaskDetails :task="task" @close="closeModal" />
     </v-dialog>
   </v-card>
 </template>
@@ -114,6 +110,10 @@ export default {
 </script>
 
 <style scoped>
+.v-dialog {
+  display: block !important;
+}
+
 .task-card {
   margin: 10px 0;
 }
