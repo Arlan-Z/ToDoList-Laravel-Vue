@@ -31,6 +31,14 @@
               outlined
             ></v-select>
           </v-col>
+          <v-col cols="12">
+            <v-text-field
+              label="Дата создания"
+              v-model="localTask.createdAt"
+              readonly
+              outlined
+            ></v-text-field>
+          </v-col>
         </v-row>
       </v-card-text>
       <v-divider></v-divider>
