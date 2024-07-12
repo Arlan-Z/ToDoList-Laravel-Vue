@@ -27,7 +27,6 @@
                     :status="status"
                     @task-created="handleTaskCreated"
                     @task-updated="handleTaskUpdated"
-                    :updateTasks="fetchTasks"
                     v-model:isVisible="showTaskForm[status]"
                   />
                   <v-card-text>

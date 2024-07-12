@@ -60,12 +60,12 @@ export default {
     },
     updateTasks: {
       type: Function,
-      required: true,
+      required: false,
     },
   },
   emits: ['update:isVisible', 'task-created', 'task-updated'],
   setup(props, { emit }) {
-    const { task, status, updateTasks } = toRefs(props);
+    const { task, status } = toRefs(props);
 
     const taskData = ref({
       title: task.value.title,
@@ -114,7 +114,7 @@ export default {
           emit('task-created');
         }
         emit('update:isVisible', false);
-        updateTasks.value();
+        // updateTasks.value();
       } catch (error) {
         console.error('Ошибка при сохранении задачи:', error);
       }
