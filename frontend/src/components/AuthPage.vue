@@ -5,6 +5,9 @@
         <h2>Авторизация</h2>
       </v-card-title>
       <v-card-text>
+        <v-alert v-if="errorMessage" type="error" dismissible class="error-container">
+          {{ errorMessage }}
+        </v-alert>
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="email"
@@ -44,6 +47,7 @@ export default {
     return {
       email: "",
       password: "",
+      errorMessage: "", // добавлено поле для сообщения об ошибке
     };
   },
   methods: {
@@ -51,9 +55,9 @@ export default {
     async goToTasks(response = null, isNew = false) {
       try {
         const token = response.data.token;
-        this.setToken(token); // Устанавливаем токен в хранилище
-        this.clearTasks(); // Очищаем задачи перед загрузкой новых
-        await this.fetchTasks(); // Загружаем новые задачи
+        this.setToken(token);
+        this.clearTasks();
+        await this.fetchTasks();
         this.$router.push("/tasks");
         if (isNew) {
           alert(
@@ -73,6 +77,7 @@ export default {
         await this.goToTasks(response);
       } catch (error) {
         console.error("Ошибка авторизации:", error);
+        this.errorMessage = "Некорректный email или пароль"; // установка сообщения об ошибке
       }
     },
     async handleRegister() {
@@ -81,6 +86,7 @@ export default {
         await this.goToTasks(response, true);
       } catch (error) {
         console.error("Ошибка регистрации:", error);
+        this.errorMessage = "Ошибка регистрации. Попробуйте снова."; // установка сообщения об ошибке
       }
     },
   },
@@ -100,5 +106,9 @@ export default {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+}
+
+.error-container {
+  margin-bottom: 20px;
 }
 </style>
